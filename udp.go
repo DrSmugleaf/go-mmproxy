@@ -9,7 +9,6 @@ import (
 	"errors"
 	"log/slog"
 	"net"
-	"net/netip"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -94,7 +93,13 @@ func udpGetSocketFromMap(downstream net.PacketConn, downstreamAddr, saddr net.Ad
 	}
 
 	targetAddr := Opts.TargetAddr6
-	if netip.MustParseAddr(downstreamAddr.String()).Is4() {
+
+	addr, err := net.ResolveUDPAddr("udp", downstreamAddr.String())
+	if err != nil {
+		return nil, err
+	}
+
+	if len(addr.IP) == 4 {
 		targetAddr = Opts.TargetAddr4
 	}
 
